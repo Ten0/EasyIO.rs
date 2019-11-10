@@ -57,6 +57,10 @@ impl<W: Write> OutputWriter<W> {
 			None => panic!("Buffer is empty"),
 		}
 	}
+
+	pub fn yesno(&mut self, b: bool) {
+		self.println(if b { "YES" } else { "NO" })
+	}
 }
 
 impl<W: Write> Write for OutputWriter<W> {
