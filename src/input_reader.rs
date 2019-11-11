@@ -46,7 +46,8 @@ impl<R: Read> InputReader<R> {
 
 		self.str_buf.clear();
 		while self.peek().is_ascii_graphic() {
-			self.str_buf.push(self.peek());
+			let c = self.peek();
+			self.str_buf.push(c);
 			self.consume();
 			if !self.has_more() {
 				break;
@@ -56,11 +57,10 @@ impl<R: Read> InputReader<R> {
 	}
 
 	pub fn next_line(&mut self) -> &str {
-		self.assert_has_more();
-
 		self.str_buf.clear();
 		while self.peek() != '\n' {
-			self.str_buf.push(self.peek());
+			let c = self.peek();
+			self.str_buf.push(c);
 			self.consume();
 			if !self.has_more() {
 				break;
@@ -148,7 +148,8 @@ impl<R: Read> InputReader<R> {
 
 // private methods
 impl<R: Read> InputReader<R> {
-	fn peek(&self) -> char {
+	fn peek(&mut self) -> char {
+		self.assert_has_more();
 		self.buf[self.current_index] as char
 	}
 
@@ -163,7 +164,6 @@ impl<R: Read> InputReader<R> {
 	fn consume_until<F: Fn(char) -> bool>(&mut self, test: F) {
 		while !test(self.peek()) {
 			self.consume();
-			self.assert_has_more();
 		}
 	}
 
@@ -175,7 +175,6 @@ impl<R: Read> InputReader<R> {
 			}
 
 			self.consume();
-			self.assert_has_more();
 			if self.peek().is_ascii_digit() {
 				return -1;
 			}
