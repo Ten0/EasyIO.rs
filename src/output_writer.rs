@@ -8,7 +8,7 @@
 */
 
 use std::fmt::Display;
-use std::fs::{File, OpenOptions};
+use std::fs::File;
 use std::io::{self, Result, Stdout, Write};
 
 pub struct OutputWriter<W: Write> {
@@ -24,8 +24,7 @@ impl OutputWriter<Stdout> {
 
 impl OutputWriter<File> {
 	pub fn from_file(path: &str) -> Self {
-		let file = OpenOptions::new().write(true).create(true).open(path);
-		Self::from_writer(file.unwrap())
+		Self::from_writer(File::create(path).unwrap())
 	}
 }
 
