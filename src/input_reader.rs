@@ -25,7 +25,7 @@ impl InputReader<Stdin> {
 }
 
 impl InputReader<File> {
-	pub fn from_file(path: &str) -> Self {
+	pub fn from_file(path: impl AsRef<std::path::Path>) -> Self {
 		Self::from_reader(File::open(path).unwrap())
 	}
 }
