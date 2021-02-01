@@ -23,7 +23,7 @@ impl OutputWriter<Stdout> {
 }
 
 impl OutputWriter<File> {
-	pub fn from_file(path: &str) -> Self {
+	pub fn from_file(path: impl AsRef<std::path::Path>) -> Self {
 		Self::from_writer(File::create(path).unwrap())
 	}
 }
