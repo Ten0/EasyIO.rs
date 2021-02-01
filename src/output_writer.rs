@@ -26,6 +26,13 @@ impl OutputWriter<File> {
 	pub fn from_file(path: impl AsRef<std::path::Path>) -> Self {
 		Self::from_writer(File::create(path).unwrap())
 	}
+
+	/// create parent folder if not exists
+	pub fn from_file_cf(path: impl AsRef<std::path::Path>) -> Self {
+		let path = path.as_ref();
+		std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+		Self::from_writer(File::create(path).unwrap())
+	}
 }
 
 impl<W: Write> OutputWriter<W> {
