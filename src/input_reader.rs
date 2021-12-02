@@ -32,18 +32,18 @@ impl InputReader<File> {
 
 impl<R: Read> InputReader<R> {
 	pub fn from_reader(reader: R) -> Self {
-		Self {
+		let mut ir = Self {
 			reader,
 			buf: vec![0; 1 << 16],
 			bytes_read: 0,
 			current_index: 0,
 			str_buf: String::with_capacity(1 << 8),
-		}
+		};
+		ir.consume_until_or_end(|c| c.is_ascii_graphic());
+		ir
 	}
 
 	pub fn next_word(&mut self) -> &str {
-		self.consume_until(|c| c.is_ascii_graphic());
-
 		self.str_buf.clear();
 		while self.peek().is_ascii_graphic() {
 			let c = self.peek();
@@ -53,6 +53,7 @@ impl<R: Read> InputReader<R> {
 				break;
 			}
 		}
+		self.consume_until_or_end(|c| c.is_ascii_graphic());
 		&self.str_buf
 	}
 
@@ -66,21 +67,17 @@ impl<R: Read> InputReader<R> {
 				break;
 			}
 		}
-		self.consume(); // consume the newline
+		self.consume_until_or_end(|c| c.is_ascii_graphic());
 		&self.str_buf
 	}
 
 	pub fn next_char(&mut self) -> char {
-		self.consume_until(|c| c.is_ascii_graphic());
-
 		let c = self.peek();
-		self.consume();
+		self.consume_until_or_end(|c| c.is_ascii_graphic());
 		c
 	}
 
 	pub fn next_u64(&mut self) -> u64 {
-		self.consume_until(|c| c.is_ascii_digit());
-
 		let mut num = 0;
 		while self.peek().is_ascii_digit() {
 			let digit = self.peek() as u64 - '0' as u64;
@@ -90,6 +87,8 @@ impl<R: Read> InputReader<R> {
 				break;
 			}
 		}
+
+		self.consume_until_or_end(|c| c.is_ascii_digit());
 		num
 	}
 
@@ -153,6 +152,14 @@ impl<R: Read> InputReader<R> {
 		self.buf[self.current_index] as char
 	}
 
+	fn opt_peek(&mut self) -> Option<char> {
+		if self.has_more() {
+			Some(self.buf[self.current_index] as char)
+		} else {
+			None
+		}
+	}
+
 	fn consume(&mut self) {
 		self.current_index += 1;
 	}
@@ -163,6 +170,12 @@ impl<R: Read> InputReader<R> {
 
 	fn consume_until<F: Fn(char) -> bool>(&mut self, test: F) {
 		while !test(self.peek()) {
+			self.consume();
+		}
+	}
+
+	fn consume_until_or_end<F: Fn(char) -> bool>(&mut self, test: F) {
+		while self.opt_peek().map_or(false, |c| !test(c)) {
 			self.consume();
 		}
 	}

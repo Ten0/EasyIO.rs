@@ -10,3 +10,8 @@ pub fn stdout_panics() {
 		std::process::exit(102);
 	}));
 }
+
+pub mod prelude {
+	pub use super::{InputReader, OutputWriter};
+	pub use std::io::{Read, Write};
+}
