@@ -73,11 +73,13 @@ impl<R: Read> InputReader<R> {
 
 	pub fn next_char(&mut self) -> char {
 		let c = self.peek();
+		self.consume();
 		self.consume_until_or_end(|c| c.is_ascii_graphic());
 		c
 	}
 
 	pub fn next_u64(&mut self) -> u64 {
+		self.consume_until(|c| c.is_ascii_digit());
 		let mut num = 0;
 		while self.peek().is_ascii_digit() {
 			let digit = self.peek() as u64 - '0' as u64;
@@ -88,7 +90,7 @@ impl<R: Read> InputReader<R> {
 			}
 		}
 
-		self.consume_until_or_end(|c| c.is_ascii_digit());
+		self.consume_until_or_end(|c| c.is_ascii_graphic());
 		num
 	}
 
