@@ -64,6 +64,10 @@ impl<W: Write> OutputWriter<W> {
 		}
 	}
 
+	pub fn nl(&mut self) {
+		self.buf.push(b'\n');
+	}
+
 	pub fn yesno(&mut self, b: bool) {
 		self.println(if b { "YES" } else { "NO" })
 	}
