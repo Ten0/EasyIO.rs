@@ -58,16 +58,24 @@ impl<R: Read> InputReader<R> {
 	}
 
 	pub fn next_line(&mut self) -> &str {
+		self.next_line_no_skip();
+		self.consume_until_or_end(|c| c.is_ascii_graphic());
+		&self.str_buf
+	}
+
+	pub fn next_line_no_skip(&mut self) -> &str {
 		self.str_buf.clear();
-		while self.peek() != '\n' {
+		loop {
 			let c = self.peek();
-			self.str_buf.push(c);
 			self.consume();
+			match c {
+				'\n' => break,
+				other => self.str_buf.push(other),
+			}
 			if !self.has_more() {
 				break;
 			}
 		}
-		self.consume_until_or_end(|c| c.is_ascii_graphic());
 		&self.str_buf
 	}
 
