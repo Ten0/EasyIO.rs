@@ -153,23 +153,23 @@ impl<R: Read> InputReader<R> {
 	pub fn next_usize(&mut self) -> usize {
 		self.next_u64() as usize
 	}
-}
 
-// private methods
-impl<R: Read> InputReader<R> {
-	fn peek(&mut self) -> char {
+	pub fn peek(&mut self) -> char {
 		self.assert_has_more();
 		self.buf[self.current_index] as char
 	}
 
-	fn opt_peek(&mut self) -> Option<char> {
+	pub fn opt_peek(&mut self) -> Option<char> {
 		if self.has_more() {
 			Some(self.buf[self.current_index] as char)
 		} else {
 			None
 		}
 	}
+}
 
+// private methods
+impl<R: Read> InputReader<R> {
 	fn consume(&mut self) {
 		self.current_index += 1;
 	}
