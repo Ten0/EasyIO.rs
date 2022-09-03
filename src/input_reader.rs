@@ -16,34 +16,54 @@ pub struct InputReader<R: Read> {
 	bytes_read: usize,
 	current_index: usize,
 	str_buf: String,
+	/// This is typically good in cases where entire input is provided
+	/// (it makes `has_more` accurate)
+	///
+	/// However it shouldn't be used if input depends on your output
+	/// as this may result in a deadlock (e.g. CodinGame)
+	egearly_consume_whitespace: bool,
 }
 
 impl InputReader<Stdin> {
 	pub fn new() -> Self {
-		Self::from_reader(io::stdin())
+		Self::from_reader(io::stdin(), true)
+	}
+	/// This is useful if playing games like CodinGame where input is not provided
+	/// all at once, but instead depends on your output
+	///
+	/// Eager whitespace consumption there would result in deadlock
+	pub fn without_eager_whitespace_consumption() -> Self {
+		Self::from_reader(io::stdin(), false)
 	}
 }
 
 impl InputReader<File> {
 	pub fn from_file(path: impl AsRef<std::path::Path>) -> Self {
-		Self::from_reader(File::open(path).unwrap())
+		Self::from_reader(File::open(path).unwrap(), true)
 	}
 }
 
 impl<R: Read> InputReader<R> {
-	pub fn from_reader(reader: R) -> Self {
+	pub fn from_reader(reader: R, egearly_consume_whitespace: bool) -> Self {
 		let mut ir = Self {
 			reader,
 			buf: vec![0; 1 << 16],
 			bytes_read: 0,
 			current_index: 0,
 			str_buf: String::with_capacity(1 << 8),
+			egearly_consume_whitespace,
 		};
-		ir.consume_until_or_end(|c| c.is_ascii_graphic());
+		if egearly_consume_whitespace {
+			ir.consume_until_or_end(|c| c.is_ascii_graphic());
+		}
 		ir
 	}
 
 	pub fn next_word(&mut self) -> &str {
+		if !self.egearly_consume_whitespace {
+			self.consume_until(|c| c.is_ascii_graphic());
+		}
+
 		self.str_buf.clear();
 		while self.peek().is_ascii_graphic() {
 			let c = self.peek();
@@ -53,13 +73,17 @@ impl<R: Read> InputReader<R> {
 				break;
 			}
 		}
-		self.consume_until_or_end(|c| c.is_ascii_graphic());
+		if self.egearly_consume_whitespace {
+			self.consume_until_or_end(|c| c.is_ascii_graphic());
+		}
 		&self.str_buf
 	}
 
 	pub fn next_line(&mut self) -> &str {
 		self.next_line_no_skip();
-		self.consume_until_or_end(|c| c.is_ascii_graphic());
+		if self.egearly_consume_whitespace {
+			self.consume_until_or_end(|c| c.is_ascii_graphic());
+		}
 		&self.str_buf
 	}
 
@@ -80,9 +104,14 @@ impl<R: Read> InputReader<R> {
 	}
 
 	pub fn next_char(&mut self) -> char {
+		if !self.egearly_consume_whitespace {
+			self.consume_until(|c| c.is_ascii_graphic());
+		}
 		let c = self.peek();
 		self.consume();
-		self.consume_until_or_end(|c| c.is_ascii_graphic());
+		if self.egearly_consume_whitespace {
+			self.consume_until_or_end(|c| c.is_ascii_graphic());
+		}
 		c
 	}
 
@@ -98,7 +127,9 @@ impl<R: Read> InputReader<R> {
 			}
 		}
 
-		self.consume_until_or_end(|c| c.is_ascii_graphic());
+		if self.egearly_consume_whitespace {
+			self.consume_until_or_end(|c| c.is_ascii_graphic());
+		}
 		num
 	}
 
