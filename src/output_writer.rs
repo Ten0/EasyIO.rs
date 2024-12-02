@@ -7,18 +7,20 @@
   2019
 */
 
-use std::fmt::Display;
-use std::fs::File;
-use std::io::{self, Result, Stdout, Write};
+use std::{
+	fmt::Display,
+	fs::File,
+	io::{self, Result, StdoutLock, Write},
+};
 
 pub struct OutputWriter<W: Write> {
 	writer: W,
 	buf: Vec<u8>,
 }
 
-impl OutputWriter<Stdout> {
+impl OutputWriter<StdoutLock<'static>> {
 	pub fn new() -> Self {
-		Self::from_writer(io::stdout())
+		Self::from_writer(io::stdout().lock())
 	}
 }
 

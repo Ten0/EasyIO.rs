@@ -7,8 +7,10 @@
   2019
 */
 
-use std::fs::File;
-use std::io::{self, Read, Stdin};
+use std::{
+	fs::File,
+	io::{self, Read, StdinLock},
+};
 
 pub struct InputReader<R: Read> {
 	reader: R,
@@ -24,16 +26,16 @@ pub struct InputReader<R: Read> {
 	egearly_consume_whitespace: bool,
 }
 
-impl InputReader<Stdin> {
+impl InputReader<StdinLock<'static>> {
 	pub fn new() -> Self {
-		Self::from_reader(io::stdin(), true)
+		Self::from_reader(io::stdin().lock(), true)
 	}
 	/// This is useful if playing games like CodinGame where input is not provided
 	/// all at once, but instead depends on your output
 	///
 	/// Eager whitespace consumption there would result in deadlock
 	pub fn without_eager_whitespace_consumption() -> Self {
-		Self::from_reader(io::stdin(), false)
+		Self::from_reader(io::stdin().lock(), false)
 	}
 }
 
